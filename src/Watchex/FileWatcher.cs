@@ -1,4 +1,5 @@
-﻿using Watchex.Logging;
+﻿using System.Reactive.Linq;
+using Watchex.Logging;
 
 namespace Watchex;
 
@@ -29,7 +30,13 @@ internal class FileWatcher
 
     var watcher = new FileSystemWatcher(fileInfo.Source.DirectoryName, fileInfo.Destination.Name);
     watcher.NotifyFilter = NotifyFilters.LastWrite;
-    watcher.Changed += (_, args) => HandleChangedEvent(args, fileInfo);
+
+    Observable
+      .FromEventPattern<FileSystemEventArgs>(watcher, nameof(watcher.Changed))
+      .Select(e => e.EventArgs)
+      .Throttle(TimeSpan.FromMilliseconds(10))
+      .Subscribe(e => HandleChangedEvent(e, fileInfo));
+
     return watcher;
   }
 
