@@ -1,0 +1,69 @@
+name: Publish
+
+permissions:
+  contents: write
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  release:
+    name: Release
+    strategy:
+      matrix:
+        kind: ['windows', 'linux']
+        include:
+          - kind: windows
+            os: ubuntu-latest
+            target: win-x64
+          - kind: linux
+            os: ubuntu-latest
+            target: linux-x64
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@v3.0.3
+        with:
+          dotnet-version: 7.0.x
+
+      - name: Create build data
+        shell: bash
+        id: build-data
+        run: |
+          tag=$(git describe --tags --abbrev=0)
+          echo "tag=$tag" >> $GITHUB_OUTPUT
+          echo "version=${tag:1}" >> $GITHUB_OUTPUT
+          echo "release_name=watchex-$tag-${{ matrix.target }}" >> $GITHUB_OUTPUT
+
+      - name: Build
+        shell: bash
+        run: |
+          dotnet publish src/Watchex/Watchex.csproj --self-contained --runtime "${{ matrix.target }}" -c Release -o "${{ steps.build-data.outputs.release_name }}" -p:Version=${{ steps.build-data.outputs.version }}
+
+      - name: Package Windows
+        shell: bash
+        run: |
+          7z a -tzip "${{ steps.build-data.outputs.release_name }}.zip" "./${{ steps.build-data.outputs.release_name }}/*"
+        if: ${{ matrix.target == 'win-x64'}}
+
+      - name: Package Linux
+        shell: bash
+        run: |
+          tar czvf "${{ steps.build-data.outputs.release_name }}.tar.gz" "${{ steps.build-data.outputs.release_name }}"
+        if: ${{ matrix.target == 'linux-x64'}}
+
+      - name: Delete output directory
+        shell: bash
+        run: |
+          rm -r ${{ steps.build-data.outputs.release_name }}
+
+      - name: Publish
+        uses: softprops/action-gh-release@v1
+        with:
+          files: "watchex*"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
