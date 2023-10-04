@@ -9,8 +9,13 @@ var currentDirectoryProject = Directory
 
 var rootProjectPath = args.Any() && File.Exists(args[0])
   ? args[0]
-  : currentDirectoryProject
-    ?? throw new InvalidOperationException("Could not find project file");
+  : currentDirectoryProject;
+
+if (rootProjectPath == null)
+{
+  Console.WriteLine("No valid project file provided, exiting...");
+  return;
+}
 
 Console.WriteLine($"Evaluating project tree for {rootProjectPath}...");
 
