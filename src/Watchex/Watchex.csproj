@@ -9,4 +9,10 @@
   </PropertyGroup>
 
 
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <PublishsingleFile>true</PublishsingleFile>
+    <DebugType>embedded</DebugType>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+  </PropertyGroup>
+
 </Project>
