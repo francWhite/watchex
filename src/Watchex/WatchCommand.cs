@@ -19,9 +19,9 @@ internal class WatchCommand : Command<WatchCommandSettings>
     }
 
     var rootProjectPath = GetProjectPath(settings);
-    if (rootProjectPath == null)
+    if (IsValidProjectPath(rootProjectPath) == false)
     {
-      AnsiConsole.MarkupLine("[red]No valid project file found, exiting...[/]");
+      AnsiConsole.MarkupLine("[red]no valid project file found, exiting...[/]");
       return 1;
     }
 
@@ -32,24 +32,22 @@ internal class WatchCommand : Command<WatchCommandSettings>
     var filesToWatch = projectEvaluator.EvaluateFilesCopiedToOutput(rootProjectPath);
     fileWatcher.Watch(filesToWatch);
 
-    AnsiConsole.MarkupLine("Press enter to [olive]exit[/]");
+    AnsiConsole.MarkupLine("press enter to [olive]exit[/]");
     Console.ReadLine();
     return 0;
   }
 
   private static string? GetProjectPath(WatchCommandSettings settings)
   {
-    if (File.Exists(settings.ProjectFile) && Path.GetExtension(settings.ProjectFile) == ".csproj")
-      return settings.ProjectFile;
-
     var currentDirectoryProject = Directory
       .GetFiles(Directory.GetCurrentDirectory(), "*.csproj")
       .FirstOrDefault();
 
-    return File.Exists(currentDirectoryProject) && Path.GetExtension(currentDirectoryProject) == ".csproj"
-      ? currentDirectoryProject
-      : null;
+    return settings.ProjectFile ?? currentDirectoryProject;
   }
+
+  private static bool IsValidProjectPath([NotNullWhen(true)] string? rootProjectPath) =>
+    File.Exists(rootProjectPath) && Path.GetExtension(rootProjectPath) == ".csproj";
 
   private static void PrintVersion()
   {
