@@ -32,7 +32,7 @@ internal class WatchCommand : Command<WatchCommandSettings>
     var filesToWatch = projectEvaluator.EvaluateFilesCopiedToOutput(rootProjectPath);
     fileWatcher.Watch(filesToWatch);
 
-    AnsiConsole.Markup("Press enter to [olive]exit[/]");
+    AnsiConsole.MarkupLine("Press enter to [olive]exit[/]");
     Console.ReadLine();
     return 0;
   }
