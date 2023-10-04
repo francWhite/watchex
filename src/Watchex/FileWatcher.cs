@@ -1,19 +1,31 @@
-﻿namespace Watchex;
+﻿using Watchex.Logging;
 
-internal static class FileWatcher
+namespace Watchex;
+
+internal class FileWatcher
 {
-  public static void Watch(IEnumerable<CopyFileInfo> filesToWatch)
+  private readonly IConsoleLogger _logger;
+
+  public FileWatcher(IConsoleLogger logger)
   {
-    var watchers = filesToWatch.Select(CreateFileSystemWatcher).ToList();
-    watchers.ForEach(w => w.EnableRaisingEvents = true);
+    _logger = logger;
   }
 
-  private static FileSystemWatcher CreateFileSystemWatcher(CopyFileInfo fileInfo)
+  public void Watch(IEnumerable<CopyFileInfo> filesToWatch)
   {
-    Console.WriteLine($"Start watching file: {fileInfo.Source}");
+    _logger.LogDebug("creating file system watchers...");
+    var watchers = filesToWatch.Select(CreateFileSystemWatcher).ToList();
+    watchers.ForEach(w => w.EnableRaisingEvents = true);
 
+    _logger.LogInfo($"watching [bold]{watchers.Count}[/] files for changes...");
+  }
+
+  private FileSystemWatcher CreateFileSystemWatcher(CopyFileInfo fileInfo)
+  {
     if (fileInfo.Source.DirectoryName == null)
       throw new InvalidOperationException($"Could not get directory name for {fileInfo.Source}");
+
+    _logger.LogDebug($"  [grey]{fileInfo.Source.FullName}[/] -> [grey]{fileInfo.Destination.FullName}[/]");
 
     var watcher = new FileSystemWatcher(fileInfo.Source.DirectoryName, fileInfo.Destination.Name);
     watcher.NotifyFilter = NotifyFilters.LastWrite;
@@ -21,9 +33,15 @@ internal static class FileWatcher
     return watcher;
   }
 
-  private static void HandleChangedEvent(FileSystemEventArgs args, CopyFileInfo copyFileInfo)
+  private void HandleChangedEvent(FileSystemEventArgs args, CopyFileInfo copyFileInfo)
   {
-    Console.WriteLine($"File {args.FullPath} changed");
-    File.Copy(copyFileInfo.Source.FullName, copyFileInfo.Destination.FullName, true);
+    _logger.LogDebug($"file [grey]{args.FullPath}[/] changed");
+
+    if (!string.IsNullOrWhiteSpace(copyFileInfo.Destination.DirectoryName))
+      Directory.CreateDirectory(copyFileInfo.Destination.DirectoryName);
+
+    using var inStream = new FileStream(copyFileInfo.Source.FullName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+    using var outStream = new FileStream(copyFileInfo.Destination.FullName, FileMode.Create, FileAccess.Write, FileShare.ReadWrite);
+    inStream.CopyTo(outStream);
   }
 }

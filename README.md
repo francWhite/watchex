@@ -23,14 +23,15 @@ Download the latest release from the [releases page](https://github.com/francWhi
 
 ## Usage
 
-If no project file is specified, the tool searches for a .csproj file in the current directory.
-
 ```
 USAGE:
-    watchex [PROJECT]
-EXAMPLES:
-    watchex
-    watchex MyProject.csproj
+    watchex [OPTIONS]
+
+OPTIONS:
+    -h, --help                 Prints help information
+    -v, --verbose              Prints verbose log output
+    -V, --version              Prints version information
+    -p, --project <PROJECT>    Path to the project file. Defaults to the first *.csproj file found in the current directory
 ```
 
 ## License

@@ -1,18 +1,38 @@
 ﻿using Microsoft.Build.Evaluation;
+using Watchex.Logging;
 
 namespace Watchex;
 
-internal static class ProjectEvaluator
+internal class ProjectEvaluator
 {
-  public static IEnumerable<CopyFileInfo> EvaluateFilesCopiedToOutput(
+  private readonly IConsoleLogger _logger;
+
+  public ProjectEvaluator(IConsoleLogger logger)
+  {
+    _logger = logger;
+  }
+
+  public IEnumerable<CopyFileInfo> EvaluateFilesCopiedToOutput(
     string rootProjectPath)
   {
-    var (projectCollection, rootProject) = LoadProjectCollection(rootProjectPath);
+    _logger.LogInfo($"evaluating project [bold]{rootProjectPath}[/]");
 
-    var copyToOutputItems = projectCollection.LoadedProjects
-      .SelectMany(p => p.Items.Where(CopyItemToOutputDirectory));
+    var (projectCollection, rootProject) = LoadProjectCollection(rootProjectPath);
+    _logger.LogDebug($"loaded [bold]{projectCollection.LoadedProjects.Count}[/] projects");
 
     var outputDirectory = Path.Combine(rootProject.DirectoryPath, rootProject.GetPropertyValue("OutputPath"));
+
+    var copyToOutputItems = projectCollection.LoadedProjects
+      .SelectMany(p => p.Items.Where(CopyItemToOutputDirectory))
+      .ToList();
+
+    _logger.LogDebug(
+      $"found [bold]{copyToOutputItems.Count}[/] files marked for copy to output directory ([grey]{outputDirectory}[/]): ");
+    _logger.LogDebug(
+      string.Join(
+        Environment.NewLine,
+        copyToOutputItems.Select(
+          i => $"  [grey]{i.Project.GetPropertyValue("ProjectName")} <{i.ItemType}> {i.EvaluatedInclude}[/]")));
 
     return copyToOutputItems
       .Select(item => CreateOutputFileInfo(item, outputDirectory));
@@ -20,7 +40,7 @@ internal static class ProjectEvaluator
 
   private static CopyFileInfo CreateOutputFileInfo(ProjectItem projectItem, string outputDirectory)
   {
-    var sourcePath = Path.Combine(projectItem.Project.DirectoryPath, projectItem.EvaluatedInclude);
+    var sourcePath = EvaluatedPath(projectItem);
     var outputPath = Path.Combine(outputDirectory, projectItem.EvaluatedInclude);
     return new CopyFileInfo(new FileInfo(sourcePath), new FileInfo(outputPath));
   }
@@ -51,4 +71,7 @@ internal static class ProjectEvaluator
     var metaData = item.Metadata.SingleOrDefault(m => m.Name == "CopyToOutputDirectory");
     return metaData != null && metaData.EvaluatedValue != "Never";
   }
+
+  private static string EvaluatedPath(ProjectItem item) =>
+    Path.Combine(item.Project.DirectoryPath, item.EvaluatedInclude);
 }
