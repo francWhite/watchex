@@ -4,7 +4,7 @@
 [![GitHub release](https://img.shields.io/github/v/release/francWhite/watchex)](https://github.com/francWhite/watchex/releases)
 [![licence](https://img.shields.io/github/license/francWhite/watchex)](https://github.com/francWhite/watchex/blob/main/LICENSE)
 
-Evaluates all files in a given .csproj file, including its dependencies, which are copied to the output directory during the build process.
+Evaluates all files in a given .csproj file, including its dependencies, which are marked as CopyToOutputDirectory "Always" or "PreserveNewest" and thus would be copied to the output directory during the build process.
 These files are then observed and if any changes are detected, they are copied to the output directory. This avoids having to rebuild the project after changes in content files like translations or non standard configurations.
 
 *Why not just use __dotnet watch__?* Even though `dotnet watch` is a great tool, it has its limitations. If you have some non-compiled files in a dependency which are included with a wildcard like `translations\**\*.json`, dotnet watch will not detect changes in these files because their paths are evaluated incorrectly; it will look for them in the startup project directory instead of the dependency in question.
