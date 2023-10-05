@@ -17,6 +17,10 @@ These files are then observed and if any changes are detected, they are copied t
 
 ## Installation
 
+### Install using [winget](https://learn.microsoft.com/en-us/windows/package-manager/winget/)
+
+`winget install francWhite.watchex`
+
 ### Install manually
 
 Download the latest release from the [releases page](https://github.com/francWhite/watchex/releases), extract the archive to a folder of your choice and add said folder to your PATH environment variable.

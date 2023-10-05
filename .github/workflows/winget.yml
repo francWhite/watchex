@@ -1,0 +1,22 @@
+﻿name: Publish to WinGet
+on:
+  release:
+    types: [released]
+jobs:
+  publish:
+    runs-on: windows-latest
+    steps:
+      - name: Wait for Release
+        uses: fountainhead/action-wait-for-check@v1.1.0
+        id: wait-for-release
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          checkName: Release (windows)
+      - name: Publish watchex to WinGet
+        uses: vedantmgoyal2009/winget-releaser@v2
+        if: steps.wait-for-release.outputs.conclusion == 'success'
+        with:
+          identifier: francWhite.watchex
+          installers-regex: '\.zip$'
+          max-versions-to-keep: 5
+          token: ${{ secrets.WINGET_TOKEN }}
