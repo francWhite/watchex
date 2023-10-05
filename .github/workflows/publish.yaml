@@ -15,7 +15,7 @@ jobs:
         kind: ['windows', 'linux']
         include:
           - kind: windows
-            os: ubuntu-latest
+            os: windows-latest
             target: win-x64
           - kind: linux
             os: ubuntu-latest
@@ -42,6 +42,7 @@ jobs:
       - name: Build
         shell: bash
         run: |
+          echo "dotnet publish src/Watchex/Watchex.csproj --self-contained --runtime "${{ matrix.target }}" -c Release -o "${{ steps.build-data.outputs.release_name }}" -p:Version=${{ steps.build-data.outputs.version }}"
           dotnet publish src/Watchex/Watchex.csproj --self-contained --runtime "${{ matrix.target }}" -c Release -o "${{ steps.build-data.outputs.release_name }}" -p:Version=${{ steps.build-data.outputs.version }}
 
       - name: Package Windows
