@@ -1,3 +1,5 @@
+![logo](doc/img/logo-banner.png)
+
 # watchex
 
 [![CI](https://github.com/francWhite/watchex/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/francWhite/watchex/actions/workflows/ci.yml)
