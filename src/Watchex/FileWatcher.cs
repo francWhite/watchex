@@ -3,9 +3,10 @@ using Watchex.Logging;
 
 namespace Watchex;
 
-internal class FileWatcher
+internal class FileWatcher : IDisposable
 {
   private readonly IConsoleLogger _logger;
+  private List<FileSystemWatcher>? _systemFileWatchers;
 
   public FileWatcher(IConsoleLogger logger)
   {
@@ -15,10 +16,10 @@ internal class FileWatcher
   public void Watch(IEnumerable<CopyFileInfo> filesToWatch)
   {
     _logger.LogDebug("creating file system watchers...");
-    var watchers = filesToWatch.Select(CreateFileSystemWatcher).ToList();
-    watchers.ForEach(w => w.EnableRaisingEvents = true);
+    _systemFileWatchers = filesToWatch.Select(CreateFileSystemWatcher).ToList();
+    _systemFileWatchers.ForEach(w => w.EnableRaisingEvents = true);
 
-    _logger.LogInfo($"watching [bold]{watchers.Count}[/] files for changes...");
+    _logger.LogInfo($"watching [bold]{_systemFileWatchers.Count}[/] files for changes...");
   }
 
   private FileSystemWatcher CreateFileSystemWatcher(CopyFileInfo fileInfo)
@@ -65,4 +66,6 @@ internal class FileWatcher
 
     inStream.CopyTo(outStream);
   }
+
+  public void Dispose() => _systemFileWatchers?.ForEach(w => w.Dispose());
 }

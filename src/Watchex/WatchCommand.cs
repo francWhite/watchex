@@ -27,7 +27,7 @@ internal class WatchCommand : Command<WatchCommandSettings>
 
     var logger = new ConsoleLogger(settings.Verbose);
     var projectEvaluator = new ProjectEvaluator(logger);
-    var fileWatcher = new FileWatcher(logger);
+    using var fileWatcher = new FileWatcher(logger);
 
     var filesToWatch = projectEvaluator.EvaluateFilesCopiedToOutput(rootProjectPath);
     fileWatcher.Watch(filesToWatch);
