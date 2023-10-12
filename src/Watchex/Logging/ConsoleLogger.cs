@@ -21,4 +21,10 @@ internal class ConsoleLogger : IConsoleLogger
     if (!_verbose) return;
     AnsiConsole.MarkupLine(markup);
   }
+
+  public void LogError(Exception exception, string message)
+  {
+    AnsiConsole.MarkupLine($"[red]{message}[/]");
+    AnsiConsole.WriteException(exception);
+  }
 }
