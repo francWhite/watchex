@@ -31,6 +31,10 @@ internal class FileWatcher
     var watcher = new FileSystemWatcher(fileInfo.Source.DirectoryName, fileInfo.Destination.Name);
     watcher.NotifyFilter = NotifyFilters.LastWrite;
 
+    watcher.Error += (_, args) => _logger.LogError(
+      args.GetException(),
+      $"Error while watching file system, affected file: {fileInfo.Source.FullName}");
+
     Observable
       .FromEventPattern<FileSystemEventArgs>(watcher, nameof(watcher.Changed))
       .Select(e => e.EventArgs)
@@ -47,8 +51,18 @@ internal class FileWatcher
     if (!string.IsNullOrWhiteSpace(copyFileInfo.Destination.DirectoryName))
       Directory.CreateDirectory(copyFileInfo.Destination.DirectoryName);
 
-    using var inStream = new FileStream(copyFileInfo.Source.FullName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-    using var outStream = new FileStream(copyFileInfo.Destination.FullName, FileMode.Create, FileAccess.Write, FileShare.ReadWrite);
+    using var inStream = new FileStream(
+      copyFileInfo.Source.FullName,
+      FileMode.Open,
+      FileAccess.Read,
+      FileShare.ReadWrite);
+
+    using var outStream = new FileStream(
+      copyFileInfo.Destination.FullName,
+      FileMode.Create,
+      FileAccess.Write,
+      FileShare.ReadWrite);
+
     inStream.CopyTo(outStream);
   }
 }
