@@ -17,7 +17,7 @@
 
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Build" Version="17.10.4" ExcludeAssets="runtime"/>
+    <PackageReference Include="Microsoft.Build" Version="17.11.4" ExcludeAssets="runtime"/>
     <PackageReference Include="Microsoft.Build.Locator" Version="1.7.8"/>
     <PackageReference Include="Spectre.Console.Cli" Version="0.49.1" />
     <PackageReference Include="System.Reactive" Version="6.0.1" />
